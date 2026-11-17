@@ -1,0 +1,41 @@
+[
+  {
+    "nom": "Projet Alpha",
+    "dateDebut": "2026-10-01",
+    "dateFin": "2026-11-30",
+    "equipes": [
+      { "nomEquipe": "Equipe Dev", "nombre": 4 },
+      { "nomEquipe": "Equipe Sys", "nombre": 2 }
+    ],
+    "taches": [
+      {
+        "intitule": "Architecture Backend",
+        "duree": 10,
+        "estTerminee": true,
+        "equipeAffectee": "Equipe Sys"
+      },
+      {
+        "intitule": "Développement API",
+        "duree": 15,
+        "estTerminee": false,
+        "equipeAffectee": "Equipe Dev"
+      }
+    ]
+  },
+  {
+    "nom": "Projet Invalide JSON",
+    "dateDebut": "2026-12-01",
+    "dateFin": "2026-11-01",
+    "equipes": [
+      { "nomEquipe": "Equipe QA", "nombre": 2 }
+    ],
+    "taches": [
+      {
+        "intitule": "Tests unitaires",
+        "duree": -5,
+        "estTerminee": false,
+        "equipeAffectee": "Equipe Inconnue"
+      }
+    ]
+  }
+]
