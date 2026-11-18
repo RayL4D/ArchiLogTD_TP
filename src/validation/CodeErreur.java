@@ -9,7 +9,10 @@ public enum CodeErreur {
   DUREE_TACHE_INVALIDE("La durée d'une tâche doit être strictement positive."),
   EQUIPE_DUPLIQUEE("Une équipe est présente en doublon dans le projet."),
   AFFECTATION_INVALIDE("Une tâche est affectée à une équipe non valide."),
-  NOM_PROJET_DUPLIQUE("Un projet avec ce nom existe déjà.");
+  NOM_PROJET_DUPLIQUE("Un projet avec ce nom existe déjà."), 
+  PROJET_INTROUVABLE("Le projet spécifié est introuvable."), 
+  EQUIPE_INTROUVABLE("L'équipe spécifiée est introuvable dans le projet."), 
+  TACHE_INTROUVABLE("La tâche spécifiée est introuvable dans le projet.");
 
   private final String messageParDefaut;
 

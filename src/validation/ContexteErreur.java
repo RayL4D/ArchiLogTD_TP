@@ -7,5 +7,6 @@ package validation;
 public enum ContexteErreur {
   CREATION_PROJET,
   VERIFICATION_PROJET,
-  FACADE_GESTION
+  FACADE_GESTION, 
+  MODIFICATION_PROJET
 }
