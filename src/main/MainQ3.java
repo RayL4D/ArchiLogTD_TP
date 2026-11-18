@@ -75,6 +75,17 @@ public class MainQ3 {
     controle("supprimerProjet('Beta') = true", gestion.supprimerProjet("Beta"));
     controle("supprimerProjet('Beta') = false la 2e fois", !gestion.supprimerProjet("Beta"));
 
+    System.out.println("\n=== MULTIPLICITÉS 1..* : on ne supprime pas la dernière équipe ni la dernière tâche ===");
+    tester("Créer 'Solo' (1 équipe, 3 tâches)", gestion.creerProjet("Solo", debut, "Equipe Solo", 1), null);
+    Projet solo = gestion.consulterProjet("Solo");
+    tester("Supprimer la tâche 'spec' (il en reste 2)", gestion.supprimerTache("Solo", "spec"), null);
+    tester("Supprimer la tâche 'dev' (il en reste 1)", gestion.supprimerTache("Solo", "dev"), null);
+    tester("Supprimer la dernière tâche 'tests'", gestion.supprimerTache("Solo", "tests"), CodeErreur.AUCUNE_TACHE);
+    controle("Annulation : la tâche 'tests' est toujours là", solo.getLesTaches().size() == 1);
+    tester("Supprimer la dernière équipe", gestion.supprimerEquipe("Solo", "Equipe Solo"), CodeErreur.AUCUNE_EQUIPE);
+    controle("Annulation : l'équipe est toujours là", solo.getLesEquipes().size() == 1);
+    controle("supprimerProjet('Solo') = true", gestion.supprimerProjet("Solo"));
+
     System.out.println("\n=== VÉRIFICATION ===");
     tester("Vérifier 'Alpha 2'", gestion.verifierProjet("Alpha 2"), null);
     tester("Vérifier un projet inconnu", gestion.verifierProjet("Inconnu"), CodeErreur.PROJET_INTROUVABLE);
