@@ -93,7 +93,7 @@ public class GestionProjets {
 
   /** Retourne tous les projets*/
   public List<Projet> getLesProjets() {
-      return lesProjets;
+	  return Collections.unmodifiableList(lesProjets);
   }
 
   // ==================== UPDATE ====================
