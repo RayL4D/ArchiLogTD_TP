@@ -58,6 +58,14 @@ public class MainQ2 {
     sansEquipe.getLesTaches().get(0).setEquipeAffectee(null);
     testerCode("Tâche sans équipe", sansEquipe, CodeErreur.AFFECTATION_INVALIDE);
 
+    Projet sansTache = creerProjetValide();
+    sansTache.getLesTaches().clear();
+    testerCode("Projet sans tâche (minimum 1)", sansTache, CodeErreur.AUCUNE_TACHE);
+
+    Projet projetSansEquipe = creerProjetValide();
+    projetSansEquipe.getLesEquipes().clear();
+    testerContient("Projet sans équipe (minimum 1)", projetSansEquipe, CodeErreur.AUCUNE_EQUIPE);
+
     System.out.println("\n=== 3. Projet avec plusieurs erreurs (la vérification ne s'arrête pas) ===");
     Projet invalide = creerProjetValide();
     invalide.setNom("");
@@ -110,6 +118,21 @@ public class MainQ2 {
       ok = erreurs.size() == 1 && erreurs.get(0).getCode() == codeAttendu;
     }
     afficher(description + (codeAttendu == null ? " -> aucune erreur" : " -> " + codeAttendu), ok);
+    if (!ok) {
+      afficherErreurs(erreurs);
+    }
+  }
+
+  /** Contrôle que le code attendu fait partie des erreurs (d'autres erreurs sont possibles). */
+  private static void testerContient(String description, Projet projet, CodeErreur codeAttendu) {
+    List<ErreurVerification> erreurs = VERIFICATEUR.verifier(projet);
+    boolean ok = false;
+    for (ErreurVerification erreur : erreurs) {
+      if (erreur.getCode() == codeAttendu) {
+        ok = true;
+      }
+    }
+    afficher(description + " -> " + codeAttendu, ok);
     if (!ok) {
       afficherErreurs(erreurs);
     }

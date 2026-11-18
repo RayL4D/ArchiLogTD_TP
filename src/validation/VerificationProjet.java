@@ -38,7 +38,15 @@ public class VerificationProjet {
                 "Début : " + projet.getDateDebut() + " / Fin : " + projet.getDateFin()));
       }
     }
-
+    
+    // Multiplicités 1..* : au moins une équipe et au moins une tâche
+    if (projet.getLesEquipes() == null || projet.getLesEquipes().isEmpty()) {
+    	erreurs.add(new ErreurVerification(CodeErreur.AUCUNE_EQUIPE, contexte));
+    }
+    if (projet.getLesTaches() == null || projet.getLesTaches().isEmpty()) {
+    	erreurs.add(new ErreurVerification(CodeErreur.AUCUNE_TACHE, contexte));
+    }
+        
     // Durée des tâches
     if (projet.getLesTaches() != null) {
       for (Tache tache : projet.getLesTaches()) {

@@ -243,9 +243,16 @@ public class GestionProjets {
     if (tache == null) {
       return uneErreur(CodeErreur.TACHE_INTROUVABLE, intituleTache);
     }
-
+    
+    int position = projet.getLesTaches().indexOf(tache);
     projet.getLesTaches().remove(tache);
-    return new ArrayList<>();
+    // Si c'était la dernière tâche, le vérificateur signale AUCUNE_TACHE.
+    List<ErreurVerification> erreurs =
+    verificateur.verifier(projet, ContexteErreur.MODIFICATION_PROJET);
+    if (!erreurs.isEmpty()) {
+    	projet.getLesTaches().add(position, tache); // annulation
+    }
+    return erreurs;
   }
 
   // ==================== VÉRIFICATION ====================

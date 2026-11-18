@@ -12,7 +12,10 @@ public enum CodeErreur {
   NOM_PROJET_DUPLIQUE("Un projet avec ce nom existe déjà."), 
   PROJET_INTROUVABLE("Le projet spécifié est introuvable."), 
   EQUIPE_INTROUVABLE("L'équipe spécifiée est introuvable dans le projet."), 
-  TACHE_INTROUVABLE("La tâche spécifiée est introuvable dans le projet.");
+  TACHE_INTROUVABLE("La tâche spécifiée est introuvable dans le projet."),
+  AUCUNE_EQUIPE("Un projet doit avoir au moins une équipe."),
+  AUCUNE_TACHE("Un projet doit avoir au moins une tâche.");
+	
 
   private final String messageParDefaut;
 
