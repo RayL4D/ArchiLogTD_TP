@@ -24,7 +24,7 @@ public class VerificationProjet {
     List<ErreurVerification> erreurs = new ArrayList<>();
 
     // Nom vide
-    if (projet.getNom() == null || projet.getNom().isEmpty()) {
+    if (projet.getNom() == null || projet.getNom().trim().isEmpty()) {
       erreurs.add(new ErreurVerification(CodeErreur.NOM_PROJET_VIDE, contexte));
     }
 
