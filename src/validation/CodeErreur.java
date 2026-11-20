@@ -9,13 +9,14 @@ public enum CodeErreur {
   DUREE_TACHE_INVALIDE("La durée d'une tâche doit être strictement positive."),
   EQUIPE_DUPLIQUEE("Une équipe est présente en doublon dans le projet."),
   AFFECTATION_INVALIDE("Une tâche est affectée à une équipe non valide."),
+  AUCUNE_EQUIPE("Un projet doit avoir au moins une équipe."),
+  AUCUNE_TACHE("Un projet doit avoir au moins une tâche."),
   NOM_PROJET_DUPLIQUE("Un projet avec ce nom existe déjà."), 
   PROJET_INTROUVABLE("Le projet spécifié est introuvable."), 
   EQUIPE_INTROUVABLE("L'équipe spécifiée est introuvable dans le projet."), 
   TACHE_INTROUVABLE("La tâche spécifiée est introuvable dans le projet."),
-  AUCUNE_EQUIPE("Un projet doit avoir au moins une équipe."),
-  AUCUNE_TACHE("Un projet doit avoir au moins une tâche.");
-	
+  FICHIER_ILLISIBLE("Le fichier est introuvable ou illisible."),
+  FORMAT_FICHIER_INVALIDE("Le contenu du fichier n'a pas le format attendu.");
 
   private final String messageParDefaut;
 

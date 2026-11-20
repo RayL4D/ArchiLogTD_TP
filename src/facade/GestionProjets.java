@@ -1,13 +1,18 @@
 package facade;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import factory.Fabriqueaprojets;
+import factory.FabriqueProjetsJson;
 import model.Equipe;
 import model.Projet;
 import model.Tache;
+import org.json.JSONException;
 import validation.CodeErreur;
 import validation.ContexteErreur;
 import validation.ErreurVerification;
@@ -23,11 +28,13 @@ public class GestionProjets {
 
   private List<Projet> lesProjets;
   private Fabriqueaprojets factory;
+  private FabriqueProjetsJson fabriqueJson;
   private VerificationProjet verificateur;
 
   public GestionProjets() {
     this.lesProjets = new ArrayList<>();
     this.factory = new Fabriqueaprojets();
+    this.fabriqueJson = new FabriqueProjetsJson();
     this.verificateur = new VerificationProjet();
   }
 
@@ -78,6 +85,39 @@ public class GestionProjets {
     }
     return erreurs;
   }
+
+  /**
+   * Importe des projets depuis un fichier JSON (via la fabrique JSON). Chaque projet importé est
+   * vérifié, puis ajouté seulement s'il est valide et si son nom n'est pas déjà pris.
+   *
+   * @param cheminFichier le chemin du fichier JSON
+   * @return un rapport « nom du projet refusé -> ses erreurs » ; il est vide si tout a été importé.
+   *     Si le fichier lui-même est illisible ou mal formé, l'erreur est rangée sous son chemin.
+   */
+  public Map<String, List<ErreurVerification>> importerProjets(String cheminFichier) {
+	    Map<String, List<ErreurVerification>> rapport = new LinkedHashMap<>();
+
+	    try {
+	      List<Projet> projets = fabriqueJson.creerProjets(cheminFichier);
+	      for (Projet projet : projets) {
+	        List<ErreurVerification> erreurs =
+	            ajouterSiValide(projet, ContexteErreur.IMPORTATION_PROJETS);
+	        if (!erreurs.isEmpty()) {
+	          rapport.put(projet.getNom(), erreurs);
+	        }
+	      }
+	    } catch (IOException e) {
+	      rapport.put(
+	          cheminFichier,
+	          uneErreur(CodeErreur.FICHIER_ILLISIBLE, ContexteErreur.IMPORTATION_PROJETS, cheminFichier));
+	    } catch (JSONException e) {
+	      rapport.put(
+	          cheminFichier,
+	          uneErreur(
+	              CodeErreur.FORMAT_FICHIER_INVALIDE, ContexteErreur.IMPORTATION_PROJETS, e.getMessage()));
+	    }
+	    return rapport;
+	  }
 
   // ==================== READ ====================
 
@@ -210,7 +250,7 @@ public class GestionProjets {
     return false;
   }
 
-  /** Supprime une équipe d'un projet (refusé si des tâches lui sont encore affectées). */
+  /** Supprime une équipe d'un projet (refusé si des tâches lui sont affectées ou si c'est la dernière). */
   public List<ErreurVerification> supprimerEquipe(String nomProjet, String nomEquipe) {
     Projet projet = consulterProjet(nomProjet);
     if (projet == null) {
@@ -224,7 +264,8 @@ public class GestionProjets {
     int position = projet.getLesEquipes().indexOf(equipe);
     projet.getLesEquipes().remove(equipe);
 
-    // Si une tâche utilise encore cette équipe, le vérificateur signale AFFECTATION_INVALIDE.
+    // Si une tâche utilise encore cette équipe : AFFECTATION_INVALIDE.
+    // Si c'était la dernière équipe : AUCUNE_EQUIPE.
     List<ErreurVerification> erreurs =
         verificateur.verifier(projet, ContexteErreur.MODIFICATION_PROJET);
     if (!erreurs.isEmpty()) {
@@ -233,7 +274,7 @@ public class GestionProjets {
     return erreurs;
   }
 
-  /** Supprime une tâche d'un projet. */
+  /** Supprime une tâche d'un projet (refusé si c'est la dernière). */
   public List<ErreurVerification> supprimerTache(String nomProjet, String intituleTache) {
     Projet projet = consulterProjet(nomProjet);
     if (projet == null) {
@@ -243,14 +284,15 @@ public class GestionProjets {
     if (tache == null) {
       return uneErreur(CodeErreur.TACHE_INTROUVABLE, intituleTache);
     }
-    
+
     int position = projet.getLesTaches().indexOf(tache);
     projet.getLesTaches().remove(tache);
+
     // Si c'était la dernière tâche, le vérificateur signale AUCUNE_TACHE.
     List<ErreurVerification> erreurs =
-    verificateur.verifier(projet, ContexteErreur.MODIFICATION_PROJET);
+        verificateur.verifier(projet, ContexteErreur.MODIFICATION_PROJET);
     if (!erreurs.isEmpty()) {
-    	projet.getLesTaches().add(position, tache); // annulation
+      projet.getLesTaches().add(position, tache); // annulation
     }
     return erreurs;
   }
@@ -282,8 +324,7 @@ public class GestionProjets {
     List<ErreurVerification> erreurs = new ArrayList<>();
     if (consulterProjet(projet.getNom()) != null) {
       erreurs.add(
-          new ErreurVerification(
-              CodeErreur.NOM_PROJET_DUPLIQUE, ContexteErreur.FACADE_GESTION, projet.getNom()));
+          new ErreurVerification(CodeErreur.NOM_PROJET_DUPLIQUE, contexte, projet.getNom()));
     }
     erreurs.addAll(verificateur.verifier(projet, contexte));
 
@@ -295,8 +336,13 @@ public class GestionProjets {
 
   /** Construit une liste contenant une seule erreur de la façade. */
   private List<ErreurVerification> uneErreur(CodeErreur code, String detail) {
+    return uneErreur(code, ContexteErreur.FACADE_GESTION, detail);
+  }
+
+  private List<ErreurVerification> uneErreur(
+      CodeErreur code, ContexteErreur contexte, String detail) {
     List<ErreurVerification> erreurs = new ArrayList<>();
-    erreurs.add(new ErreurVerification(code, ContexteErreur.FACADE_GESTION, detail));
+    erreurs.add(new ErreurVerification(code, contexte, detail));
     return erreurs;
   }
 
