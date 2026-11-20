@@ -23,6 +23,34 @@
     ]
   },
   {
+    "nom": "Projet Beta",
+    "dateDebut": "2026-11-01",
+    "dateFin": "2026-12-15",
+    "equipes": [
+      { "nomEquipe": "Equipe Design", "nombre": 3 }
+    ],
+    "taches": [
+      {
+        "intitule": "Maquettes",
+        "duree": 7,
+        "estTerminee": true,
+        "equipeAffectee": "Equipe Design"
+      },
+      {
+        "intitule": "Charte graphique",
+        "duree": 5,
+        "estTerminee": false,
+        "equipeAffectee": "Equipe Design"
+      },
+      {
+        "intitule": "Tests utilisateurs",
+        "duree": 3,
+        "estTerminee": false,
+        "equipeAffectee": "Equipe Design"
+      }
+    ]
+  },
+  {
     "nom": "Projet Invalide JSON",
     "dateDebut": "2026-12-01",
     "dateFin": "2026-11-01",
@@ -35,6 +63,62 @@
         "duree": -5,
         "estTerminee": false,
         "equipeAffectee": "Equipe Inconnue"
+      }
+    ]
+  },
+  {
+    "nom": "Projet Sans Equipe Ni Tache",
+    "dateDebut": "2027-01-10",
+    "dateFin": "2027-02-10",
+    "equipes": [],
+    "taches": []
+  },
+  {
+    "nom": "Projet Equipes En Double",
+    "dateDebut": "2027-03-01",
+    "dateFin": "2027-04-01",
+    "equipes": [
+      { "nomEquipe": "Equipe Dev", "nombre": 2 },
+      { "nomEquipe": "Equipe Dev", "nombre": 5 }
+    ],
+    "taches": [
+      {
+        "intitule": "Prototype",
+        "duree": 8,
+        "estTerminee": false,
+        "equipeAffectee": "Equipe Dev"
+      }
+    ]
+  },
+  {
+    "nom": "   ",
+    "dateDebut": "2027-05-01",
+    "dateFin": "2027-06-01",
+    "equipes": [
+      { "nomEquipe": "Equipe Dev", "nombre": 1 }
+    ],
+    "taches": [
+      {
+        "intitule": "Tâche sans projet nommé",
+        "duree": 2,
+        "estTerminee": false,
+        "equipeAffectee": "Equipe Dev"
+      }
+    ]
+  },
+  {
+    "nom": "Projet Alpha",
+    "dateDebut": "2027-07-01",
+    "dateFin": "2027-08-01",
+    "equipes": [
+      { "nomEquipe": "Equipe Dev", "nombre": 3 }
+    ],
+    "taches": [
+      {
+        "intitule": "Doublon du premier projet",
+        "duree": 4,
+        "estTerminee": false,
+        "equipeAffectee": "Equipe Dev"
       }
     ]
   }
