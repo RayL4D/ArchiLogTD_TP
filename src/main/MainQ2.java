@@ -3,9 +3,10 @@ package main;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import model.Equipe;
-import model.Projet;
-import model.Tache;
+
+import metier.Equipe;
+import metier.Projet;
+import metier.Tache;
 import validation.CodeErreur;
 import validation.ContexteErreur;
 import validation.ErreurVerification;

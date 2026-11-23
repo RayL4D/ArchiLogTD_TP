@@ -1,5 +1,4 @@
-package model;
-
+package metier;
 /**
  * Représente une équipe travaillant sur un projet.
  */

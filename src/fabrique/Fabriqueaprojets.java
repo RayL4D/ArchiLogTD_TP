@@ -1,11 +1,12 @@
-package factory;
+package fabrique;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import model.Equipe;
-import model.Projet;
-import model.Tache;
+
+import metier.Equipe;
+import metier.Projet;
+import metier.Tache;
 
 /**
  * Fabrique responsable de la création, de l'initialisation et du suivi des projets.

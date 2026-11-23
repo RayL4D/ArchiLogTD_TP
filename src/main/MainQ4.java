@@ -6,9 +6,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import facade.GestionProjets;
-import model.Equipe;
-import model.Projet;
-import model.Tache;
 import validation.CodeErreur;
 import validation.ErreurVerification;
 
@@ -27,9 +24,9 @@ public class MainQ4 {
     Map<String, List<ErreurVerification>> rapport = gestion.importerProjets("projets.json");
     afficherRapport(rapport);
 
-    controle("'Projet Alpha' est importé", gestion.consulterProjet("Projet Alpha") != null);
-    controle("'Projet Beta' est importé", gestion.consulterProjet("Projet Beta") != null);
-    controle("2 projets en mémoire", gestion.getLesProjets().size() == 2);
+    controle("'Projet Alpha' est importé", gestion.existeProjet("Projet Alpha"));
+    controle("'Projet Beta' est importé", gestion.existeProjet("Projet Beta"));
+    controle("2 projets en mémoire", gestion.getNomsProjets().size() == 2);
     controle("5 projets refusés dans le rapport", rapport.size() == 5);
     controle("Les projets importés sont valides", gestion.verifierTousLesProjets().isEmpty());
 
@@ -45,34 +42,40 @@ public class MainQ4 {
     controle("Projet au nom vide : NOM_PROJET_VIDE", contient(rapport.get("   "), CodeErreur.NOM_PROJET_VIDE));
     controle("Second 'Projet Alpha' (même nom) : NOM_PROJET_DUPLIQUE", contient(rapport.get("Projet Alpha"), CodeErreur.NOM_PROJET_DUPLIQUE));
 
-    System.out.println("\n=== 2. Contenu du projet importé ===");
-    Projet alpha = gestion.consulterProjet("Projet Alpha");
-    controle("Le 'Projet Alpha' importé est bien le premier (2 équipes, 2 tâches)", alpha.getLesEquipes().size() == 2 && alpha.getLesTaches().size() == 2);
-    Tache architecture = alpha.getLesTaches().get(0);
-    controle("Tâche 'Architecture Backend', 10 j, terminée", architecture.getIntitule().equals("Architecture Backend") && architecture.getDuree() == 10 && architecture.isEstTerminee());
-    Equipe equipeSys = alpha.getLesEquipes().get(1);
-    controle("La tâche est affectée à l'objet Equipe 'Equipe Sys' du projet", architecture.getEquipeAffectee() == equipeSys && equipeSys.getNomEquipe().equals("Equipe Sys"));
-    Projet beta = gestion.consulterProjet("Projet Beta");
-    controle("'Projet Beta' : 1 équipe, 3 tâches", beta.getLesEquipes().size() == 1 && beta.getLesTaches().size() == 3);
+    System.out.println("\n=== 2. Contenu des projets importés (contrôlé à travers la façade) ===");
+    controle("Alpha et Beta sont valides : leurs tâches sont bien affectées aux équipes de leur projet",
+        gestion.verifierProjet("Projet Alpha").isEmpty() && gestion.verifierProjet("Projet Beta").isEmpty());
+
+    // On compte les tâches en les supprimant une à une : la dernière est refusée (minimum 1).
+    // On travaille sur une copie pour ne pas toucher aux projets de 'gestion'.
+    GestionProjets copie = new GestionProjets();
+    copie.importerProjets("projets.json");
+    controle("Alpha : 'Architecture Backend' existe et se supprime", copie.supprimerTache("Projet Alpha", "Architecture Backend").isEmpty());
+    controle("Alpha : il n'avait que 2 tâches, 'Développement API' est la dernière",
+        contient(copie.supprimerTache("Projet Alpha", "Développement API"), CodeErreur.AUCUNE_TACHE));
+    controle("Beta : 'Maquettes' et 'Charte graphique' se suppriment",
+        copie.supprimerTache("Projet Beta", "Maquettes").isEmpty() && copie.supprimerTache("Projet Beta", "Charte graphique").isEmpty());
+    controle("Beta : il avait 3 tâches, 'Tests utilisateurs' est la dernière",
+        contient(copie.supprimerTache("Projet Beta", "Tests utilisateurs"), CodeErreur.AUCUNE_TACHE));
 
     System.out.println("\n=== 3. Réimporter le même fichier : les noms doivent rester uniques ===");
     rapport = gestion.importerProjets("projets.json");
     controle("'Projet Alpha' refusé : NOM_PROJET_DUPLIQUE", contient(rapport.get("Projet Alpha"), CodeErreur.NOM_PROJET_DUPLIQUE));
     controle("'Projet Beta' refusé : NOM_PROJET_DUPLIQUE", contient(rapport.get("Projet Beta"), CodeErreur.NOM_PROJET_DUPLIQUE));
-    controle("Toujours 2 projets en mémoire", gestion.getLesProjets().size() == 2);
+    controle("Toujours 2 projets en mémoire", gestion.getNomsProjets().size() == 2);
 
     System.out.println("\n=== 4. Deux projets de même nom dans le même fichier ===");
     gestion = new GestionProjets();
     rapport = gestion.importerProjets(ecrireFichier("[" + projetJson("Doublon") + "," + projetJson("Doublon") + "]"));
     afficherRapport(rapport);
-    controle("Le premier est importé, le second refusé", gestion.getLesProjets().size() == 1);
+    controle("Le premier est importé, le second refusé", gestion.getNomsProjets().size() == 1);
     controle("Erreur NOM_PROJET_DUPLIQUE", contient(rapport.get("Doublon"), CodeErreur.NOM_PROJET_DUPLIQUE));
 
     System.out.println("\n=== 5. Fichier valide : rapport vide ===");
     gestion = new GestionProjets();
     rapport = gestion.importerProjets(ecrireFichier("[" + projetJson("A") + "," + projetJson("B") + "]"));
     controle("Rapport vide", rapport.isEmpty());
-    controle("2 projets importés", gestion.getLesProjets().size() == 2);
+    controle("2 projets importés", gestion.getNomsProjets().size() == 2);
     controle("Fichier vide ([]) : rien à importer, pas d'erreur", new GestionProjets().importerProjets(ecrireFichier("[]")).isEmpty());
 
     System.out.println("\n=== 6. Minimums 1..* : projet sans équipe ou sans tâche ===");
@@ -128,7 +131,7 @@ public class MainQ4 {
         codeTrouve = true;
       }
     }
-    controle(description + " -> " + codeAttendu + ", rien d'importé", codeTrouve && gestion.getLesProjets().isEmpty());
+    controle(description + " -> " + codeAttendu + ", rien d'importé", codeTrouve && gestion.getNomsProjets().isEmpty());
   }
 
   private static boolean contient(List<ErreurVerification> erreurs, CodeErreur code) {
