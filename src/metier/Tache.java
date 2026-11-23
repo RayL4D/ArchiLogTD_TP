@@ -1,4 +1,4 @@
-package model;
+package metier;
 
 /**
  * Représente une tâche spécifique à accomplir au sein d'un projet.

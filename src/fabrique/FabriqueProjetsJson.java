@@ -1,4 +1,4 @@
-package factory;
+package fabrique;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,9 +10,10 @@ import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import model.Equipe;
-import model.Projet;
-import model.Tache;
+
+import metier.Equipe;
+import metier.Projet;
+import metier.Tache;
 
 /**
  * Fabrique qui construit une liste de projets à partir d'un fichier JSON décrivant leurs équipes et

@@ -3,15 +3,16 @@ package main;
 import java.time.LocalDate;
 import java.util.List;
 import facade.GestionProjets;
-import model.Equipe;
-import model.Projet;
-import model.Tache;
 import validation.CodeErreur;
 import validation.ErreurVerification;
 
 /**
  * Test de la question 3 : la façade GestionProjets (CRUD + vérification). Chaque méthode renvoie
  * une liste d'erreurs : vide = succès. Si une modification rend le projet invalide, elle est annulée.
+ *
+ * <p>La façade cache les classes du modèle : ce test n'utilise que des noms, des nombres, des dates
+ * et des listes d'erreurs. Pour contrôler qu'une modification refusée a bien été annulée, on vérifie
+ * que le projet est toujours valide (verifierProjet) ou qu'un nouvel essai donne la même erreur.
  */
 public class MainQ3 {
 
@@ -24,13 +25,12 @@ public class MainQ3 {
     tester("Créer 'Beta'", gestion.creerProjet("Beta", debut, "Equipe Sys", 2), null);
     tester("Créer 'Alpha' une 2e fois (nom déjà pris)", gestion.creerProjet("Alpha", debut, "Equipe Dev", 4), CodeErreur.NOM_PROJET_DUPLIQUE);
     tester("Créer un projet au nom vide", gestion.creerProjet("  ", debut, "Equipe Dev", 4), CodeErreur.NOM_PROJET_VIDE);
-    controle("2 projets en mémoire", gestion.getLesProjets().size() == 2);
+    controle("2 projets en mémoire", gestion.getNomsProjets().size() == 2);
 
     System.out.println("\n=== READ ===");
-    Projet alpha = gestion.consulterProjet("Alpha");
-    controle("consulterProjet('Alpha') trouve le projet", alpha != null);
-    controle("consulterProjet('Inconnu') renvoie null", gestion.consulterProjet("Inconnu") == null);
-    afficherProjets(gestion);
+    controle("existeProjet('Alpha')", gestion.existeProjet("Alpha"));
+    controle("existeProjet('Inconnu') = false", !gestion.existeProjet("Inconnu"));
+    afficherNoms(gestion);
 
     System.out.println("\n=== CREATE : équipes et tâches ===");
     tester("Ajouter l'équipe 'Equipe QA' à Alpha", gestion.ajouterEquipe("Alpha", "Equipe QA", 2), null);
@@ -39,36 +39,36 @@ public class MainQ3 {
     tester("Ajouter une tâche d'une équipe inconnue", gestion.ajouterTache("Alpha", "deploiement", 3, "Equipe Zzz"), CodeErreur.AFFECTATION_INVALIDE);
     tester("Ajouter une tâche de durée 0", gestion.ajouterTache("Alpha", "bug", 0, "Equipe Dev"), CodeErreur.DUREE_TACHE_INVALIDE);
     tester("Ajouter une tâche à un projet inconnu", gestion.ajouterTache("Inconnu", "x", 1, "Equipe Dev"), CodeErreur.PROJET_INTROUVABLE);
-    controle("Alpha a 2 équipes et 4 tâches (les ajouts refusés sont annulés)", alpha.getLesEquipes().size() == 2 && alpha.getLesTaches().size() == 4);
+    tester("Annulation : la tâche refusée 'deploiement' n'existe pas", gestion.supprimerTache("Alpha", "deploiement"), CodeErreur.TACHE_INTROUVABLE);
+    tester("Annulation : la tâche refusée 'bug' n'existe pas", gestion.supprimerTache("Alpha", "bug"), CodeErreur.TACHE_INTROUVABLE);
+    controle("Annulation : Alpha reste valide", gestion.verifierProjet("Alpha").isEmpty());
 
     System.out.println("\n=== UPDATE ===");
     tester("Renommer 'Alpha' -> 'Alpha 2'", gestion.modifierNomProjet("Alpha", "Alpha 2"), null);
-    controle("L'ancien nom n'existe plus, le nouveau oui", gestion.consulterProjet("Alpha") == null && gestion.consulterProjet("Alpha 2") != null);
+    controle("L'ancien nom n'existe plus, le nouveau oui", !gestion.existeProjet("Alpha") && gestion.existeProjet("Alpha 2"));
     tester("Renommer 'Alpha 2' -> 'Beta' (nom déjà pris)", gestion.modifierNomProjet("Alpha 2", "Beta"), CodeErreur.NOM_PROJET_DUPLIQUE);
     tester("Renommer 'Alpha 2' -> nom vide", gestion.modifierNomProjet("Alpha 2", ""), CodeErreur.NOM_PROJET_VIDE);
-    controle("Annulation : le projet s'appelle toujours 'Alpha 2'", alpha.getNom().equals("Alpha 2"));
+    controle("Annulation : le projet s'appelle toujours 'Alpha 2' et reste valide", gestion.existeProjet("Alpha 2") && gestion.verifierProjet("Alpha 2").isEmpty());
     tester("Renommer un projet inconnu", gestion.modifierNomProjet("Inconnu", "Zeta"), CodeErreur.PROJET_INTROUVABLE);
 
-    LocalDate finAvant = alpha.getDateFin();
     tester("Dates cohérentes", gestion.modifierDatesProjet("Alpha 2", debut, debut.plusMonths(2)), null);
     tester("Date de fin avant le début", gestion.modifierDatesProjet("Alpha 2", debut, debut.minusDays(1)), CodeErreur.DATES_INCOHERENTES);
-    controle("Annulation : la date de fin est restée " + debut.plusMonths(2), alpha.getDateFin().equals(debut.plusMonths(2)) && !alpha.getDateFin().equals(finAvant));
+    controle("Annulation : Alpha 2 reste valide (dates)", gestion.verifierProjet("Alpha 2").isEmpty());
 
     tester("Modifier l'équipe 'Equipe QA' -> 'Equipe Tests' (3 pers.)", gestion.modifierEquipe("Alpha 2", "Equipe QA", "Equipe Tests", 3), null);
     tester("Modifier une équipe inconnue", gestion.modifierEquipe("Alpha 2", "Equipe Zzz", "Autre", 1), CodeErreur.EQUIPE_INTROUVABLE);
     tester("Renommer 'Equipe Tests' -> 'Equipe Dev' (doublon)", gestion.modifierEquipe("Alpha 2", "Equipe Tests", "Equipe Dev", 3), CodeErreur.EQUIPE_DUPLIQUEE);
-    controle("Annulation : l'équipe s'appelle toujours 'Equipe Tests'", alpha.getLesEquipes().get(1).getNomEquipe().equals("Equipe Tests"));
+    controle("Annulation : Alpha 2 reste valide (équipes)", gestion.verifierProjet("Alpha 2").isEmpty());
 
     tester("Terminer la tâche 'spec'", gestion.modifierTache("Alpha 2", "spec", 7, true, "Equipe Dev"), null);
     tester("Tâche 'dev' avec une durée négative", gestion.modifierTache("Alpha 2", "dev", -1, false, "Equipe Dev"), CodeErreur.DUREE_TACHE_INVALIDE);
     tester("Tâche 'dev' affectée à une équipe inconnue", gestion.modifierTache("Alpha 2", "dev", 7, false, "Equipe Zzz"), CodeErreur.AFFECTATION_INVALIDE);
     tester("Modifier une tâche inconnue", gestion.modifierTache("Alpha 2", "nope", 1, false, "Equipe Dev"), CodeErreur.TACHE_INTROUVABLE);
-    Tache dev = trouverTache(alpha, "dev");
-    controle("Annulation : 'dev' garde sa durée (7) et son équipe", dev.getDuree() == 7 && dev.getEquipeAffectee().getNomEquipe().equals("Equipe Dev"));
+    controle("Annulation : Alpha 2 reste valide (tâches)", gestion.verifierProjet("Alpha 2").isEmpty());
 
     System.out.println("\n=== DELETE ===");
     tester("Supprimer l'équipe 'Equipe Tests' (encore utilisée par 'doc')", gestion.supprimerEquipe("Alpha 2", "Equipe Tests"), CodeErreur.AFFECTATION_INVALIDE);
-    controle("L'équipe est toujours là (annulation)", alpha.getLesEquipes().size() == 2);
+    controle("Annulation : l'équipe est toujours là (Alpha 2 reste valide)", gestion.verifierProjet("Alpha 2").isEmpty());
     tester("Supprimer la tâche 'doc'", gestion.supprimerTache("Alpha 2", "doc"), null);
     tester("Supprimer l'équipe 'Equipe Tests' (maintenant libre)", gestion.supprimerEquipe("Alpha 2", "Equipe Tests"), null);
     tester("Supprimer une tâche inconnue", gestion.supprimerTache("Alpha 2", "nope"), CodeErreur.TACHE_INTROUVABLE);
@@ -77,13 +77,12 @@ public class MainQ3 {
 
     System.out.println("\n=== MULTIPLICITÉS 1..* : on ne supprime pas la dernière équipe ni la dernière tâche ===");
     tester("Créer 'Solo' (1 équipe, 3 tâches)", gestion.creerProjet("Solo", debut, "Equipe Solo", 1), null);
-    Projet solo = gestion.consulterProjet("Solo");
     tester("Supprimer la tâche 'spec' (il en reste 2)", gestion.supprimerTache("Solo", "spec"), null);
     tester("Supprimer la tâche 'dev' (il en reste 1)", gestion.supprimerTache("Solo", "dev"), null);
     tester("Supprimer la dernière tâche 'tests'", gestion.supprimerTache("Solo", "tests"), CodeErreur.AUCUNE_TACHE);
-    controle("Annulation : la tâche 'tests' est toujours là", solo.getLesTaches().size() == 1);
+    tester("Annulation : un nouvel essai donne encore AUCUNE_TACHE (la tâche existe toujours)", gestion.supprimerTache("Solo", "tests"), CodeErreur.AUCUNE_TACHE);
     tester("Supprimer la dernière équipe", gestion.supprimerEquipe("Solo", "Equipe Solo"), CodeErreur.AUCUNE_EQUIPE);
-    controle("Annulation : l'équipe est toujours là", solo.getLesEquipes().size() == 1);
+    tester("Annulation : un nouvel essai donne encore AUCUNE_EQUIPE (l'équipe existe toujours)", gestion.supprimerEquipe("Solo", "Equipe Solo"), CodeErreur.AUCUNE_EQUIPE);
     controle("supprimerProjet('Solo') = true", gestion.supprimerProjet("Solo"));
 
     System.out.println("\n=== VÉRIFICATION ===");
@@ -91,30 +90,13 @@ public class MainQ3 {
     tester("Vérifier un projet inconnu", gestion.verifierProjet("Inconnu"), CodeErreur.PROJET_INTROUVABLE);
     tester("Vérifier tous les projets", gestion.verifierTousLesProjets(), null);
 
-    System.out.println("\n=== Un projet cassé volontairement est détecté par verifierTousLesProjets ===");
-    alpha.getLesTaches().get(0).setDuree(0); // on triche en modifiant directement le modèle
-    List<ErreurVerification> erreurs = gestion.verifierTousLesProjets();
-    controle("1 erreur détectée : " + (erreurs.isEmpty() ? "-" : erreurs.get(0).getCode()), erreurs.size() == 1);
-
-    System.out.println("\n=== getLesProjets() est en lecture seule ===");
-    try {
-      gestion.getLesProjets().add(alpha);
-      controle("Ajout direct refusé", false);
-    } catch (UnsupportedOperationException e) {
-      controle("Ajout direct refusé (UnsupportedOperationException)", true);
-    }
+    System.out.println("\n=== getNomsProjets() renvoie une copie : on ne peut pas ajouter de projet par là ===");
+    List<String> noms = gestion.getNomsProjets();
+    noms.add("Intrus");
+    controle("Modifier la liste reçue ne crée aucun projet", !gestion.existeProjet("Intrus") && gestion.getNomsProjets().size() == 1);
 
     System.out.println("\n=== État final ===");
-    afficherProjets(gestion);
-  }
-
-  private static Tache trouverTache(Projet projet, String intitule) {
-    for (Tache tache : projet.getLesTaches()) {
-      if (tache.getIntitule().equals(intitule)) {
-        return tache;
-      }
-    }
-    return null;
+    afficherNoms(gestion);
   }
 
   /** Contrôle le résultat d'une méthode de la façade : codeAttendu == null veut dire « aucune erreur ». */
@@ -138,16 +120,7 @@ public class MainQ3 {
     System.out.println((condition ? "✅ " : "❌ ") + description);
   }
 
-  private static void afficherProjets(GestionProjets gestion) {
-    for (Projet projet : gestion.getLesProjets()) {
-      System.out.println("Projet '" + projet.getNom() + "' (" + projet.getDateDebut() + " -> " + projet.getDateFin() + ")");
-      for (Equipe equipe : projet.getLesEquipes()) {
-        System.out.println("   Equipe : " + equipe.getNomEquipe() + " (" + equipe.getNombre() + ")");
-      }
-      for (Tache tache : projet.getLesTaches()) {
-        String nomEquipe = tache.getEquipeAffectee() == null ? "aucune" : tache.getEquipeAffectee().getNomEquipe();
-        System.out.println("   Tâche : " + tache.getIntitule() + " | " + tache.getDuree() + " j | terminée = " + tache.isEstTerminee() + " | " + nomEquipe);
-      }
-    }
+  private static void afficherNoms(GestionProjets gestion) {
+    System.out.println("Projets : " + gestion.getNomsProjets());
   }
 }

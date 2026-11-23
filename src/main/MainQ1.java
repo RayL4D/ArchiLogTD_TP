@@ -1,10 +1,11 @@
 package main;
 
 import java.time.LocalDate;
-import factory.Fabriqueaprojets;
-import model.Equipe;
-import model.Projet;
-import model.Tache;
+
+import fabrique.Fabriqueaprojets;
+import metier.Equipe;
+import metier.Projet;
+import metier.Tache;
 
 /**
  * Test de la question 1 : la Factory crée un projet « standard » (1 équipe, 3 tâches spec / dev /
