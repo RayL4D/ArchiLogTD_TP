@@ -2,6 +2,7 @@ package fabrique;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -43,7 +44,7 @@ public class FabriqueProjetsJson {
    * @throws JSONException si le contenu n'est pas du JSON valide ou s'il manque une information
    */
   public List<Projet> creerProjets(String cheminFichier) throws IOException {
-    String contenu = Files.readString(Path.of(cheminFichier));
+    String contenu = Files.readString(lireChemin(cheminFichier));
     JSONArray jsonProjets = new JSONArray(contenu);
 
     List<Projet> projets = new ArrayList<>();
@@ -51,6 +52,18 @@ public class FabriqueProjetsJson {
       projets.add(creerProjet(jsonProjets.getJSONObject(i)));
     }
     return projets;
+  }
+
+  /** Transforme le texte en chemin ; un chemin absent ou impossible est traité comme un fichier illisible. */
+  private Path lireChemin(String cheminFichier) throws IOException {
+    if (cheminFichier == null) {
+      throw new IOException("Aucun chemin de fichier donné");
+    }
+    try {
+      return Path.of(cheminFichier);
+    } catch (InvalidPathException e) {
+      throw new IOException("Chemin invalide : " + cheminFichier, e);
+    }
   }
 
   /** Construit un projet à partir de son objet JSON. */

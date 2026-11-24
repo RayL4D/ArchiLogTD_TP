@@ -107,7 +107,7 @@
     ]
   },
   {
-    "nom": "Projet Alpha",
+    "nom": "Projet Doublon",
     "dateDebut": "2027-07-01",
     "dateFin": "2027-08-01",
     "equipes": [
@@ -115,8 +115,24 @@
     ],
     "taches": [
       {
-        "intitule": "Doublon du premier projet",
+        "intitule": "Premier exemplaire",
         "duree": 4,
+        "estTerminee": false,
+        "equipeAffectee": "Equipe Dev"
+      }
+    ]
+  },
+  {
+    "nom": "Projet Doublon",
+    "dateDebut": "2027-09-01",
+    "dateFin": "2027-10-01",
+    "equipes": [
+      { "nomEquipe": "Equipe Dev", "nombre": 2 }
+    ],
+    "taches": [
+      {
+        "intitule": "Second exemplaire",
+        "duree": 6,
         "estTerminee": false,
         "equipeAffectee": "Equipe Dev"
       }

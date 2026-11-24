@@ -3,6 +3,7 @@ package main;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import facade.GestionProjets;
@@ -40,7 +41,8 @@ public class MainQ4 {
     controle("'Projet Sans Equipe Ni Tache' : aucune tâche", contient(erreursVide, CodeErreur.AUCUNE_TACHE));
     controle("'Projet Equipes En Double' : équipe dupliquée", contient(rapport.get("Projet Equipes En Double"), CodeErreur.EQUIPE_DUPLIQUEE));
     controle("Projet au nom vide : NOM_PROJET_VIDE", contient(rapport.get("   "), CodeErreur.NOM_PROJET_VIDE));
-    controle("Second 'Projet Alpha' (même nom) : NOM_PROJET_DUPLIQUE", contient(rapport.get("Projet Alpha"), CodeErreur.NOM_PROJET_DUPLIQUE));
+    controle("'Projet Doublon' (2 fois dans le fichier) : NOM_PROJET_DUPLIQUE", contient(rapport.get("Projet Doublon"), CodeErreur.NOM_PROJET_DUPLIQUE));
+    controle("'Projet Doublon' : aucun des deux exemplaires n'est importé", !gestion.existeProjet("Projet Doublon"));
 
     System.out.println("\n=== 2. Contenu des projets importés (contrôlé à travers la façade) ===");
     controle("Alpha et Beta sont valides : leurs tâches sont bien affectées aux équipes de leur projet",
@@ -64,12 +66,34 @@ public class MainQ4 {
     controle("'Projet Beta' refusé : NOM_PROJET_DUPLIQUE", contient(rapport.get("Projet Beta"), CodeErreur.NOM_PROJET_DUPLIQUE));
     controle("Toujours 2 projets en mémoire", gestion.getNomsProjets().size() == 2);
 
+    System.out.println("\n=== 3 bis. Second fichier projets2.json : Gamma et Epsilon valides, Alpha déjà existant, Delta en double dans le fichier ===");
+    rapport = gestion.importerProjets("projets2.json");
+    afficherRapport(rapport);
+    controle("'Projet Gamma' est importé", gestion.existeProjet("Projet Gamma"));
+    controle("'Projet Epsilon' est importé", gestion.existeProjet("Projet Epsilon"));
+    controle("'Projet Alpha' refusé : nom déjà pris par un projet existant", contient(rapport.get("Projet Alpha"), CodeErreur.NOM_PROJET_DUPLIQUE));
+    controle("'Projet Delta' refusé : 2 fois dans le fichier", contient(rapport.get("Projet Delta"), CodeErreur.NOM_PROJET_DUPLIQUE));
+    controle("Aucun des deux 'Projet Delta' n'est importé", !gestion.existeProjet("Projet Delta"));
+    controle("4 projets en mémoire : Alpha, Beta, Gamma, Epsilon", gestion.getNomsProjets().equals(List.of("Projet Alpha", "Projet Beta", "Projet Gamma", "Projet Epsilon")));
+    controle("Les projets importés sont valides", gestion.verifierTousLesProjets().isEmpty());
+
     System.out.println("\n=== 4. Deux projets de même nom dans le même fichier ===");
     gestion = new GestionProjets();
     rapport = gestion.importerProjets(ecrireFichier("[" + projetJson("Doublon") + "," + projetJson("Doublon") + "]"));
     afficherRapport(rapport);
-    controle("Le premier est importé, le second refusé", gestion.getNomsProjets().size() == 1);
+    controle("Aucun des deux n'est importé", gestion.getNomsProjets().isEmpty());
     controle("Erreur NOM_PROJET_DUPLIQUE", contient(rapport.get("Doublon"), CodeErreur.NOM_PROJET_DUPLIQUE));
+
+    System.out.println("\n=== 4 bis. Les deux contrôles de noms : fichier {p3, p4, p3, p5}, projets existants {p1, p2, p4} ===");
+    gestion = new GestionProjets();
+    gestion.creerProjet("p1", LocalDate.of(2026, 10, 1), "Dev", 2);
+    gestion.creerProjet("p2", LocalDate.of(2026, 10, 1), "Dev", 2);
+    gestion.creerProjet("p4", LocalDate.of(2026, 10, 1), "Dev", 2);
+    rapport = gestion.importerProjets(ecrireFichier("[" + projetJson("p3") + "," + projetJson("p4") + "," + projetJson("p3") + "," + projetJson("p5") + "]"));
+    afficherRapport(rapport);
+    controle("p3 (2 fois dans le fichier) refusé : NOM_PROJET_DUPLIQUE", contient(rapport.get("p3"), CodeErreur.NOM_PROJET_DUPLIQUE));
+    controle("p4 (déjà existant) refusé : NOM_PROJET_DUPLIQUE", contient(rapport.get("p4"), CodeErreur.NOM_PROJET_DUPLIQUE));
+    controle("Seul p5 est ajouté : projets = p1, p2, p4, p5", gestion.getNomsProjets().equals(List.of("p1", "p2", "p4", "p5")));
 
     System.out.println("\n=== 5. Fichier valide : rapport vide ===");
     gestion = new GestionProjets();
@@ -84,12 +108,23 @@ public class MainQ4 {
     String sansTache = projetJson("SansTache").replace(tacheJson(), "");
     testerRefus("taches = []", "[" + sansTache + "]", CodeErreur.AUCUNE_TACHE);
 
+    testerRefus("Équipe de -3 personnes", "[" + projetJson("X").replace("\"nombre\": 2", "\"nombre\": -3") + "]", CodeErreur.NOMBRE_EQUIPE_INVALIDE);
+
     System.out.println("\n=== 7. Fichier illisible ou mal formé : erreur signalée, pas de plantage ===");
     testerRefus("Fichier introuvable", null, CodeErreur.FICHIER_ILLISIBLE);
+    GestionProjets gestionFormat = new GestionProjets();
+    rapport = gestionFormat.importerProjets("projets-format-invalide.json");
+    controle("projets-format-invalide.json (clé 'dateFin' absente du 2e projet) -> FORMAT_FICHIER_INVALIDE",
+        contient(rapport.get("projets-format-invalide.json"), CodeErreur.FORMAT_FICHIER_INVALIDE));
+    controle("Fichier refusé en entier : même 'Projet Zeta' (valide) n'est pas importé", gestionFormat.getNomsProjets().isEmpty());
     testerRefus("JSON incomplet", "[ { \"nom\": ", CodeErreur.FORMAT_FICHIER_INVALIDE);
     testerRefus("Racine = objet au lieu d'un tableau", projetJson("X"), CodeErreur.FORMAT_FICHIER_INVALIDE);
     testerRefus("Clé 'dateFin' manquante", "[" + projetJson("X").replace(" \"dateFin\": \"2026-11-30\",", "") + "]", CodeErreur.FORMAT_FICHIER_INVALIDE);
     testerRefus("Date invalide", "[" + projetJson("X").replace("2026-11-30", "30/11/2026") + "]", CodeErreur.FORMAT_FICHIER_INVALIDE);
+    controle("Chemin null -> FICHIER_ILLISIBLE, sans plantage",
+        contient(new GestionProjets().importerProjets(null).get(null), CodeErreur.FICHIER_ILLISIBLE));
+    controle("Chemin invalide (caractère interdit) -> FICHIER_ILLISIBLE, sans plantage",
+        contient(new GestionProjets().importerProjets("a\0b.json").get("a\0b.json"), CodeErreur.FICHIER_ILLISIBLE));
     testerRefus("Durée non numérique", "[" + projetJson("X").replace("\"duree\": 5", "\"duree\": \"abc\"") + "]", CodeErreur.FORMAT_FICHIER_INVALIDE);
 
     System.out.println("\n=== 8. Le programme continue après toutes ces erreurs ===");

@@ -8,6 +8,7 @@ public enum CodeErreur {
   DATES_INCOHERENTES("La date de début est ultérieure à la date de fin."),
   DUREE_TACHE_INVALIDE("La durée d'une tâche doit être strictement positive."),
   EQUIPE_DUPLIQUEE("Une équipe est présente en doublon dans le projet."),
+  NOMBRE_EQUIPE_INVALIDE("Une équipe doit avoir au moins une personne."),
   AFFECTATION_INVALIDE("Une tâche est affectée à une équipe non valide."),
   AUCUNE_EQUIPE("Un projet doit avoir au moins une équipe."),
   AUCUNE_TACHE("Un projet doit avoir au moins une tâche."),

@@ -1,0 +1,89 @@
+[
+  {
+    "nom": "Projet Gamma",
+    "dateDebut": "2027-01-10",
+    "dateFin": "2027-03-10",
+    "equipes": [
+      { "nomEquipe": "Equipe Web", "nombre": 3 },
+      { "nomEquipe": "Equipe Test", "nombre": 2 }
+    ],
+    "taches": [
+      {
+        "intitule": "Page d'accueil",
+        "duree": 6,
+        "estTerminee": false,
+        "equipeAffectee": "Equipe Web"
+      },
+      {
+        "intitule": "Plan de test",
+        "duree": 4,
+        "estTerminee": true,
+        "equipeAffectee": "Equipe Test"
+      }
+    ]
+  },
+  {
+    "nom": "Projet Alpha",
+    "dateDebut": "2027-02-01",
+    "dateFin": "2027-04-01",
+    "equipes": [
+      { "nomEquipe": "Equipe Dev", "nombre": 2 }
+    ],
+    "taches": [
+      {
+        "intitule": "Même nom qu'un projet déjà existant",
+        "duree": 5,
+        "estTerminee": false,
+        "equipeAffectee": "Equipe Dev"
+      }
+    ]
+  },
+  {
+    "nom": "Projet Delta",
+    "dateDebut": "2027-03-01",
+    "dateFin": "2027-05-01",
+    "equipes": [
+      { "nomEquipe": "Equipe Dev", "nombre": 2 }
+    ],
+    "taches": [
+      {
+        "intitule": "Premier Delta",
+        "duree": 3,
+        "estTerminee": false,
+        "equipeAffectee": "Equipe Dev"
+      }
+    ]
+  },
+  {
+    "nom": "Projet Delta",
+    "dateDebut": "2027-04-01",
+    "dateFin": "2027-06-01",
+    "equipes": [
+      { "nomEquipe": "Equipe Dev", "nombre": 4 }
+    ],
+    "taches": [
+      {
+        "intitule": "Second Delta",
+        "duree": 8,
+        "estTerminee": false,
+        "equipeAffectee": "Equipe Dev"
+      }
+    ]
+  },
+  {
+    "nom": "Projet Epsilon",
+    "dateDebut": "2027-05-15",
+    "dateFin": "2027-07-15",
+    "equipes": [
+      { "nomEquipe": "Equipe Data", "nombre": 5 }
+    ],
+    "taches": [
+      {
+        "intitule": "Nettoyage des données",
+        "duree": 9,
+        "estTerminee": false,
+        "equipeAffectee": "Equipe Data"
+      }
+    ]
+  }
+]

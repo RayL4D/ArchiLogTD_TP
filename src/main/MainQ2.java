@@ -51,6 +51,14 @@ public class MainQ2 {
     equipeEnDoublon.getLesEquipes().add(new Equipe("Equipe Dev", 1));
     testerCode("Deux équipes avec le même nom", equipeEnDoublon, CodeErreur.EQUIPE_DUPLIQUEE);
 
+    Projet equipeNegative = creerProjetValide();
+    equipeNegative.getLesEquipes().get(0).setNombre(-3);
+    testerCode("Équipe de -3 personnes", equipeNegative, CodeErreur.NOMBRE_EQUIPE_INVALIDE);
+
+    Projet equipeVide = creerProjetValide();
+    equipeVide.getLesEquipes().get(0).setNombre(0);
+    testerCode("Équipe de 0 personne", equipeVide, CodeErreur.NOMBRE_EQUIPE_INVALIDE);
+
     Projet equipeHorsProjet = creerProjetValide();
     equipeHorsProjet.getLesTaches().get(0).setEquipeAffectee(new Equipe("Equipe Externe", 1));
     testerCode("Tâche affectée à une équipe hors projet", equipeHorsProjet, CodeErreur.AFFECTATION_INVALIDE);
