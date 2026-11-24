@@ -6,6 +6,8 @@ import java.util.Map;
 import fabrique.FabriqueProjetsJson;
 import fabrique.Fabriqueaprojets;
 import validation.ContexteErreur;
+import visiteur.AfficheurHierarchique;
+import visiteur.AfficheurTachesAPlat;
 import validation.ErreurVerification;
 
 /**
@@ -72,6 +74,26 @@ public class GestionProjets {
   /** Retourne les noms de tous les projets (une copie : la modifier ne change pas les projets). */
   public List<String> getNomsProjets() {
     return portefeuille.getNomsProjets();
+  }
+
+  /**
+   * Affiche un projet de façon hiérarchique (le projet, ses équipes, ses tâches).
+   *
+   * @param nomProjet le nom du projet
+   * @return le texte du projet, ou null si le projet n'existe pas (voir existeProjet)
+   */
+  public String afficherProjet(String nomProjet) {
+    return portefeuille.appliquerSurProjet(nomProjet, new AfficheurHierarchique());
+  }
+
+  /** Affiche tous les projets de façon hiérarchique. */
+  public String afficherProjets() {
+    return portefeuille.appliquerSurTousLesProjets(new AfficheurHierarchique());
+  }
+
+  /** Affiche à plat les tâches de tous les projets, avec leur projet, leur équipe et leur état. */
+  public String afficherTaches() {
+    return portefeuille.appliquerSurTousLesProjets(new AfficheurTachesAPlat());
   }
 
   // ==================== UPDATE ====================

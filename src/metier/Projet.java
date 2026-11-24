@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Représente un projet avec une période, une liste de tâches et les équipes qui y participent.
  */
-public class Projet {
+public class Projet implements ElementProjet {
   private String nom;
   private LocalDate dateDebut;
   private LocalDate dateFin;
@@ -74,5 +74,10 @@ public class Projet {
 
   public void setLesEquipes(List<Equipe> lesEquipes) {
     this.lesEquipes = lesEquipes;
+  }
+
+  @Override
+  public String applique(OutilProjet unOutil) {
+    return unOutil.agitSur(this);
   }
 }

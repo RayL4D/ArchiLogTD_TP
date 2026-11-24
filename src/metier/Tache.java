@@ -3,7 +3,7 @@ package metier;
 /**
  * Représente une tâche spécifique à accomplir au sein d'un projet.
  */
-public class Tache {
+public class Tache implements ElementProjet {
   private String intitule;
   private int duree;
   private boolean estTerminee;
@@ -55,5 +55,10 @@ public class Tache {
 
   public void setEquipeAffectee(Equipe equipeAffectee) {
     this.equipeAffectee = equipeAffectee;
+  }
+
+  @Override
+  public String applique(OutilProjet unOutil) {
+    return unOutil.agitSur(this);
   }
 }
