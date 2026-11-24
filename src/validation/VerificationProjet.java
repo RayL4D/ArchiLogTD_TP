@@ -32,6 +32,7 @@ public class VerificationProjet {
     verifierMultiplicites(projet, contexte, erreurs);
     verifierDureeTaches(projet, contexte, erreurs);
     verifierEquipesDistinctes(projet, contexte, erreurs);
+    verifierNombrePersonnes(projet, contexte, erreurs);
     verifierAffectations(projet, contexte, erreurs);
 
     return erreurs;
@@ -140,6 +141,28 @@ public class VerificationProjet {
                   "Équipe concernée : " + equipe.getNomEquipe()));
         } else {
           nomsEquipes.add(equipe.getNomEquipe());
+        }
+      }
+    }
+  }
+
+  /**
+   * Vérifie que chaque équipe compte au moins une personne.
+   *
+   * @param projet le projet à vérifier
+   * @param contexte le contexte d'où vient la vérification
+   * @param erreurs la liste à laquelle ajouter une erreur par équipe invalide
+   */
+  private void verifierNombrePersonnes(
+      Projet projet, ContexteErreur contexte, List<ErreurVerification> erreurs) {
+    if (projet.getLesEquipes() != null) {
+      for (Equipe equipe : projet.getLesEquipes()) {
+        if (equipe.getNombre() <= 0) {
+          erreurs.add(
+              new ErreurVerification(
+                  CodeErreur.NOMBRE_EQUIPE_INVALIDE,
+                  contexte,
+                  "Équipe concernée : " + equipe.getNomEquipe()));
         }
       }
     }

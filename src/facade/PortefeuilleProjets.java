@@ -89,8 +89,13 @@ class PortefeuilleProjets {
   }
 
   /**
-   * Importe des projets depuis un fichier JSON (via la fabrique JSON). Chaque projet importé est
-   * vérifié, puis ajouté seulement s'il est valide et si son nom n'est pas déjà pris.
+   * Importe des projets depuis un fichier JSON (via la fabrique JSON), en deux contrôles de noms :
+   *
+   * <ol>
+   *   <li>les noms en double dans le fichier : tous les projets concernés sont refusés ;
+   *   <li>les noms déjà pris par les projets existants : le projet est refusé (et il doit aussi être
+   *       valide pour être ajouté).
+   * </ol>
    *
    * @param fabrique la fabrique qui lit le fichier et construit les projets
    * @param cheminFichier le chemin du fichier JSON
@@ -103,13 +108,8 @@ class PortefeuilleProjets {
 
     try {
       List<Projet> projets = fabrique.creerProjets(cheminFichier);
-      for (Projet projet : projets) {
-        List<ErreurVerification> erreurs =
-            ajouterSiValide(projet, ContexteErreur.IMPORTATION_PROJETS);
-        if (!erreurs.isEmpty()) {
-          rapport.put(projet.getNom(), erreurs);
-        }
-      }
+      List<Projet> sansDoublon = refuserDoublonsDuFichier(projets, rapport);
+      ajouterLesProjets(sansDoublon, rapport);
     } catch (IOException e) {
       rapport.put(
           cheminFichier,
@@ -121,6 +121,57 @@ class PortefeuilleProjets {
               CodeErreur.FORMAT_FICHIER_INVALIDE, ContexteErreur.IMPORTATION_PROJETS, e.getMessage()));
     }
     return rapport;
+  }
+
+  /**
+   * Contrôle 1 : refuse les projets dont le nom apparaît plusieurs fois dans le fichier.
+   *
+   * @param projets les projets lus dans le fichier
+   * @param rapport le rapport auquel ajouter les projets refusés
+   * @return les projets dont le nom est unique dans le fichier
+   */
+  private List<Projet> refuserDoublonsDuFichier(
+      List<Projet> projets, Map<String, List<ErreurVerification>> rapport) {
+    List<Projet> uniques = new ArrayList<>();
+    for (Projet projet : projets) {
+      if (compterNom(projets, projet.getNom()) > 1) {
+        rapport.put(
+            projet.getNom(),
+            uneErreur(
+                CodeErreur.NOM_PROJET_DUPLIQUE,
+                ContexteErreur.IMPORTATION_PROJETS,
+                projet.getNom() + " (présent plusieurs fois dans le fichier)"));
+      } else {
+        uniques.add(projet);
+      }
+    }
+    return uniques;
+  }
+
+  /** Compte combien de projets de la liste portent ce nom. */
+  private int compterNom(List<Projet> projets, String nom) {
+    int nombre = 0;
+    for (Projet projet : projets) {
+      if (projet.getNom().equals(nom)) {
+        nombre++;
+      }
+    }
+    return nombre;
+  }
+
+  /**
+   * Contrôle 2 : ajoute chaque projet s'il est valide et si son nom n'est pas déjà pris par un projet
+   * existant ; sinon le projet est refusé et ses erreurs vont dans le rapport.
+   */
+  private void ajouterLesProjets(
+      List<Projet> projets, Map<String, List<ErreurVerification>> rapport) {
+    for (Projet projet : projets) {
+      List<ErreurVerification> erreurs =
+          ajouterSiValide(projet, ContexteErreur.IMPORTATION_PROJETS);
+      if (!erreurs.isEmpty()) {
+        rapport.put(projet.getNom(), erreurs);
+      }
+    }
   }
 
   // ==================== READ ====================

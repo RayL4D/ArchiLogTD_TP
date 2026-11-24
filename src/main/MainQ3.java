@@ -35,6 +35,7 @@ public class MainQ3 {
     System.out.println("\n=== CREATE : équipes et tâches ===");
     tester("Ajouter l'équipe 'Equipe QA' à Alpha", gestion.ajouterEquipe("Alpha", "Equipe QA", 2), null);
     tester("Ajouter l'équipe 'Equipe Dev' en doublon", gestion.ajouterEquipe("Alpha", "Equipe Dev", 1), CodeErreur.EQUIPE_DUPLIQUEE);
+    tester("Ajouter une équipe de -3 personnes", gestion.ajouterEquipe("Alpha", "Equipe Fantome", -3), CodeErreur.NOMBRE_EQUIPE_INVALIDE);
     tester("Ajouter la tâche 'doc' (Equipe QA)", gestion.ajouterTache("Alpha", "doc", 5, "Equipe QA"), null);
     tester("Ajouter une tâche d'une équipe inconnue", gestion.ajouterTache("Alpha", "deploiement", 3, "Equipe Zzz"), CodeErreur.AFFECTATION_INVALIDE);
     tester("Ajouter une tâche de durée 0", gestion.ajouterTache("Alpha", "bug", 0, "Equipe Dev"), CodeErreur.DUREE_TACHE_INVALIDE);
@@ -56,6 +57,8 @@ public class MainQ3 {
     controle("Annulation : Alpha 2 reste valide (dates)", gestion.verifierProjet("Alpha 2").isEmpty());
 
     tester("Modifier l'équipe 'Equipe QA' -> 'Equipe Tests' (3 pers.)", gestion.modifierEquipe("Alpha 2", "Equipe QA", "Equipe Tests", 3), null);
+    tester("Modifier l'équipe 'Equipe Tests' avec 0 personne", gestion.modifierEquipe("Alpha 2", "Equipe Tests", "Equipe Tests", 0), CodeErreur.NOMBRE_EQUIPE_INVALIDE);
+    tester("Créer un projet dont l'équipe a -3 personnes", gestion.creerProjet("Negatif", debut, "Equipe Neg", -3), CodeErreur.NOMBRE_EQUIPE_INVALIDE);
     tester("Modifier une équipe inconnue", gestion.modifierEquipe("Alpha 2", "Equipe Zzz", "Autre", 1), CodeErreur.EQUIPE_INTROUVABLE);
     tester("Renommer 'Equipe Tests' -> 'Equipe Dev' (doublon)", gestion.modifierEquipe("Alpha 2", "Equipe Tests", "Equipe Dev", 3), CodeErreur.EQUIPE_DUPLIQUEE);
     controle("Annulation : Alpha 2 reste valide (équipes)", gestion.verifierProjet("Alpha 2").isEmpty());
