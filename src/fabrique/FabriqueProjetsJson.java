@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.time.DateTimeException;
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import org.json.JSONArray;
@@ -15,6 +15,9 @@ import org.json.JSONObject;
 import metier.Equipe;
 import metier.Projet;
 import metier.Tache;
+import validation.CodeErreur;
+import validation.ContexteErreur;
+import validation.ErreurVerification;
 
 /**
  * Fabrique qui construit une liste de projets à partir d'un fichier JSON décrivant leurs équipes et
@@ -38,32 +41,39 @@ public class FabriqueProjetsJson {
   /**
    * Lit le fichier JSON et construit les projets qu'il décrit.
    *
+   * <p>Aucune exception ne sort de cette méthode : si le fichier est illisible ou mal formé, l'erreur
+   * est ajoutée à la liste donnée et la liste de projets renvoyée est vide.
+   *
    * @param cheminFichier le chemin du fichier JSON
-   * @return la liste des projets construits (non vérifiés)
-   * @throws IOException si le fichier est introuvable ou illisible
-   * @throws JSONException si le contenu n'est pas du JSON valide ou s'il manque une information
+   * @param erreurs la liste à laquelle ajouter l'erreur si le fichier ne peut pas être lu
+   * @return la liste des projets construits (non vérifiés), vide en cas d'erreur
    */
-  public List<Projet> creerProjets(String cheminFichier) throws IOException {
-    String contenu = Files.readString(lireChemin(cheminFichier));
-    JSONArray jsonProjets = new JSONArray(contenu);
-
+  public List<Projet> creerProjets(String cheminFichier, List<ErreurVerification> erreurs) {
     List<Projet> projets = new ArrayList<>();
-    for (int i = 0; i < jsonProjets.length(); i++) {
-      projets.add(creerProjet(jsonProjets.getJSONObject(i)));
+    if (cheminFichier == null) {
+      erreurs.add(erreurFichier(CodeErreur.FICHIER_ILLISIBLE, "aucun chemin donné"));
+      return projets;
+    }
+    // Seul endroit du projet qui attrape des exceptions : ce sont celles de Java (lecture du fichier)
+    // et de la bibliothèque org.json (JSON mal formé), transformées ici en erreurs du rapport.
+    try {
+      JSONArray jsonProjets = new JSONArray(Files.readString(Path.of(cheminFichier)));
+      for (int i = 0; i < jsonProjets.length(); i++) {
+        projets.add(creerProjet(jsonProjets.getJSONObject(i)));
+      }
+    } catch (IOException | InvalidPathException exception) {
+      projets.clear();
+      erreurs.add(erreurFichier(CodeErreur.FICHIER_ILLISIBLE, cheminFichier));
+    } catch (JSONException | DateTimeException exception) {
+      projets.clear();
+      erreurs.add(erreurFichier(CodeErreur.FORMAT_FICHIER_INVALIDE, exception.getMessage()));
     }
     return projets;
   }
 
-  /** Transforme le texte en chemin ; un chemin absent ou impossible est traité comme un fichier illisible. */
-  private Path lireChemin(String cheminFichier) throws IOException {
-    if (cheminFichier == null) {
-      throw new IOException("Aucun chemin de fichier donné");
-    }
-    try {
-      return Path.of(cheminFichier);
-    } catch (InvalidPathException e) {
-      throw new IOException("Chemin invalide : " + cheminFichier, e);
-    }
+  /** Crée l'erreur d'un fichier qui n'a pas pu être lu. */
+  private ErreurVerification erreurFichier(CodeErreur code, String detail) {
+    return new ErreurVerification(code, ContexteErreur.IMPORTATION_PROJETS, detail);
   }
 
   /** Construit un projet à partir de son objet JSON. */
@@ -111,11 +121,6 @@ public class FabriqueProjetsJson {
 
   /** Lit une date au format AAAA-MM-JJ. */
   private LocalDate lireDate(JSONObject json, String cle) {
-    String texte = json.getString(cle);
-    try {
-      return LocalDate.parse(texte);
-    } catch (DateTimeParseException e) {
-      throw new JSONException("Date invalide pour '" + cle + "' : " + texte);
-    }
+    return LocalDate.parse(json.getString(cle));
   }
 }

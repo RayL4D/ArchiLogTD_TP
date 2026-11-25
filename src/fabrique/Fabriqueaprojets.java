@@ -46,7 +46,7 @@ public class Fabriqueaprojets {
 
     // Calcul de la date de fin (3 tâches d'une semaine = +3 semaines)
     LocalDate dateFin;
-    if (dateDebut == null) {
+    if (dateDebut == null || dateDebut.isAfter(LocalDate.MAX.minusWeeks(lesTaches.size()))) {
     	dateFin = null;
     } else {
     	dateFin = dateDebut.plusWeeks(lesTaches.size());

@@ -118,14 +118,14 @@ public final class VueListeProjets extends Stage implements Observateur {
       message.setText("Erreur : choisis une date de début.");
       return;
     }
-    try {
-      int nombre = Integer.parseInt(champNombre.getText().trim());
-      List<ErreurVerification> erreurs =
-          gestion.creerProjet(champNom.getText(), dateDebut, champEquipe.getText(), nombre);
-      message.setText(Messages.enTexte(erreurs, "Projet ajouté."));
-    } catch (NumberFormatException e) {
+    String texteNombre = champNombre.getText().trim();
+    if (!texteNombre.matches("-?[0-9]{1,9}")) {
       message.setText("Erreur : le nombre de personnes doit être un nombre entier.");
+      return;
     }
+    List<ErreurVerification> erreurs =
+        gestion.creerProjet(champNom.getText(), dateDebut, champEquipe.getText(), Integer.parseInt(texteNombre));
+    message.setText(Messages.enTexte(erreurs, "Projet ajouté."));
   }
 
   private void supprimer() {
