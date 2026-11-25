@@ -33,6 +33,8 @@ public class VerificationProjet {
     verifierDureeTaches(projet, contexte, erreurs);
     verifierEquipesDistinctes(projet, contexte, erreurs);
     verifierNombrePersonnes(projet, contexte, erreurs);
+    verifierNomsEquipes(projet, contexte, erreurs);
+    verifierIntitulesTaches(projet, contexte, erreurs);
     verifierAffectations(projet, contexte, erreurs);
 
     return erreurs;
@@ -70,15 +72,15 @@ public class VerificationProjet {
    * @param erreurs la liste à laquelle ajouter l'erreur éventuelle
    */
   private void verifierDates(Projet projet, ContexteErreur contexte, List<ErreurVerification> erreurs) {
-    if (projet.getDateDebut() != null && projet.getDateFin() != null) {
-      if (projet.getDateDebut().isAfter(projet.getDateFin())) {
+	  if (projet.getDateDebut() == null || projet.getDateFin() == null) {
+		  erreurs.add(new ErreurVerification(CodeErreur.DATE_MANQUANTE, contexte));
+	  } else if (projet.getDateDebut().isAfter(projet.getDateFin())) {
         erreurs.add(
             new ErreurVerification(
                 CodeErreur.DATES_INCOHERENTES,
                 contexte,
                 "Début : " + projet.getDateDebut() + " / Fin : " + projet.getDateFin()));
-      }
-    }
+	  }
   }
 
   /**
@@ -167,6 +169,45 @@ public class VerificationProjet {
       }
     }
   }
+  
+  /**
+   * Vérifie que le nom de chaque équipe n'est ni absent ni composé uniquement d'espaces.
+   *
+   * @param projet le projet à vérifier
+   * @param contexte le contexte d'où vient la vérification
+   * @param erreurs la liste à laquelle ajouter une erreur par équipe sans nom
+   */
+  private void verifierNomsEquipes(
+      Projet projet, ContexteErreur contexte, List<ErreurVerification> erreurs) {
+    if (projet.getLesEquipes() != null) {
+      for (Equipe equipe : projet.getLesEquipes()) {
+        if (equipe.getNomEquipe() == null || equipe.getNomEquipe().trim().isEmpty()) {
+          erreurs.add(new ErreurVerification(CodeErreur.NOM_EQUIPE_VIDE, contexte));
+        }
+      }
+    }
+  }
+  
+  
+  /**
+   * Vérifie que l'intitulé de chaque tâche n'est ni absent ni composé uniquement d'espaces.
+   *
+   * @param projet le projet à vérifier
+   * @param contexte le contexte d'où vient la vérification
+   * @param erreurs la liste à laquelle ajouter une erreur par tâche sans intitulé
+   */
+  private void verifierIntitulesTaches(
+      Projet projet, ContexteErreur contexte, List<ErreurVerification> erreurs) {
+    if (projet.getLesTaches() != null) {
+      for (Tache tache : projet.getLesTaches()) {
+        if (tache.getIntitule() == null || tache.getIntitule().trim().isEmpty()) {
+          erreurs.add(new ErreurVerification(CodeErreur.NOM_TACHE_VIDE, contexte));
+        }
+      }
+    }
+  }
+  
+  
 
   /**
    * Vérifie que chaque tâche est affectée à une équipe qui appartient bien au projet.
