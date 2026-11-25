@@ -181,18 +181,19 @@ public final class VueProjet extends Stage implements Observateur {
   }
 
   private void ajouterTache() {
-    try {
-      int duree = Integer.parseInt(champDuree.getText().trim());
-      List<ErreurVerification> erreurs =
-          gestion.ajouterTache(nomProjet, champIntitule.getText(), duree, choixEquipe.getValue());
-      if (erreurs.isEmpty()) {
-        champIntitule.clear();
-        champDuree.clear();
-      }
-      message.setText(Messages.enTexte(erreurs, "Tâche ajoutée."));
-    } catch (NumberFormatException e) {
+    String texteDuree = champDuree.getText().trim();
+    if (!texteDuree.matches("-?[0-9]{1,9}")) {
       message.setText("Erreur : la durée doit être un nombre entier.");
+      return;
     }
+    List<ErreurVerification> erreurs =
+        gestion.ajouterTache(
+            nomProjet, champIntitule.getText(), Integer.parseInt(texteDuree), choixEquipe.getValue());
+    if (erreurs.isEmpty()) {
+      champIntitule.clear();
+      champDuree.clear();
+    }
+    message.setText(Messages.enTexte(erreurs, "Tâche ajoutée."));
   }
 
   private void supprimerTache() {

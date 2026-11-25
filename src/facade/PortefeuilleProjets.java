@@ -107,19 +107,13 @@ class PortefeuilleProjets {
       FabriqueProjetsJson fabrique, String cheminFichier) {
     Map<String, List<ErreurVerification>> rapport = new LinkedHashMap<>();
 
-    try {
-      List<Projet> projets = fabrique.creerProjets(cheminFichier);
+    List<ErreurVerification> erreursFichier = new ArrayList<>();
+    List<Projet> projets = fabrique.creerProjets(cheminFichier, erreursFichier);
+    if (erreursFichier.isEmpty()) {
       List<Projet> sansDoublon = refuserDoublonsDuFichier(projets, rapport);
       ajouterLesProjets(sansDoublon, rapport);
-    } catch (IOException e) {
-      rapport.put(
-          cheminFichier,
-          uneErreur(CodeErreur.FICHIER_ILLISIBLE, ContexteErreur.IMPORTATION_PROJETS, cheminFichier));
-    } catch (JSONException e) {
-      rapport.put(
-          cheminFichier,
-          uneErreur(
-              CodeErreur.FORMAT_FICHIER_INVALIDE, ContexteErreur.IMPORTATION_PROJETS, e.getMessage()));
+    } else {
+      rapport.put(cheminFichier, erreursFichier);
     }
     return rapport;
   }
