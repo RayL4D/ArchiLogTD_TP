@@ -2,7 +2,7 @@ package metier;
 /**
  * Représente une équipe travaillant sur un projet.
  */
-public class Equipe {
+public class Equipe implements ElementProjet {
   private String nomEquipe;
   private int nombre;
 
@@ -32,5 +32,10 @@ public class Equipe {
 
   public void setNombre(int nombre) {
     this.nombre = nombre;
+  }
+
+  @Override
+  public String applique(OutilProjet unOutil) {
+    return unOutil.agitSur(this);
   }
 }

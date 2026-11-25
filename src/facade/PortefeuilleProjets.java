@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import fabrique.FabriqueProjetsJson;
 import metier.Equipe;
+import metier.OutilProjet;
 import metier.Projet;
 import metier.Tache;
 import org.json.JSONException;
@@ -188,6 +189,35 @@ class PortefeuilleProjets {
       noms.add(projet.getNom());
     }
     return noms;
+  }
+
+  /**
+   * Applique un outil (visiteur) à un projet.
+   *
+   * @param nom le nom du projet
+   * @param outil l'outil à appliquer
+   * @return le texte construit par l'outil, ou null si le projet n'existe pas
+   */
+  String appliquerSurProjet(String nom, OutilProjet outil) {
+    Projet projet = chercherProjet(nom);
+    if (projet == null) {
+      return null;
+    }
+    return projet.applique(outil);
+  }
+
+  /**
+   * Applique un outil (visiteur) à tous les projets, l'un après l'autre.
+   *
+   * @param outil l'outil à appliquer
+   * @return le texte construit par l'outil pour l'ensemble des projets
+   */
+  String appliquerSurTousLesProjets(OutilProjet outil) {
+    String texte = "";
+    for (Projet projet : lesProjets) {
+      texte += projet.applique(outil);
+    }
+    return texte;
   }
 
   // ==================== UPDATE ====================
