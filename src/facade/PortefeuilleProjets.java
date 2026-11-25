@@ -191,6 +191,48 @@ class PortefeuilleProjets {
     return noms;
   }
 
+  /** Retourne la date de début d'un projet (null si le projet n'existe pas). */
+  LocalDate getDateDebut(String nomProjet) {
+    Projet projet = chercherProjet(nomProjet);
+    if (projet == null) {
+      return null;
+    }
+    return projet.getDateDebut();
+  }
+
+  /** Retourne la date de fin d'un projet (null si le projet n'existe pas). */
+  LocalDate getDateFin(String nomProjet) {
+    Projet projet = chercherProjet(nomProjet);
+    if (projet == null) {
+      return null;
+    }
+    return projet.getDateFin();
+  }
+
+  /** Retourne les intitulés des tâches d'un projet (liste vide si le projet n'existe pas). */
+  List<String> getIntitulesTaches(String nomProjet) {
+    List<String> intitules = new ArrayList<>();
+    Projet projet = chercherProjet(nomProjet);
+    if (projet != null) {
+      for (Tache tache : projet.getLesTaches()) {
+        intitules.add(tache.getIntitule());
+      }
+    }
+    return intitules;
+  }
+
+  /** Retourne les noms des équipes d'un projet (liste vide si le projet n'existe pas). */
+  List<String> getNomsEquipes(String nomProjet) {
+    List<String> noms = new ArrayList<>();
+    Projet projet = chercherProjet(nomProjet);
+    if (projet != null) {
+      for (Equipe equipe : projet.getLesEquipes()) {
+        noms.add(equipe.getNomEquipe());
+      }
+    }
+    return noms;
+  }
+
   /**
    * Applique un outil (visiteur) à un projet.
    *

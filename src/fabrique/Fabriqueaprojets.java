@@ -45,7 +45,12 @@ public class Fabriqueaprojets {
     lesTaches.add(new Tache(TACHE_TESTS, DUREE_TACHE_SEMAINE, ETAT_NON_TERMINE, equipe));
 
     // Calcul de la date de fin (3 tâches d'une semaine = +3 semaines)
-    LocalDate dateFin = dateDebut.plusWeeks(lesTaches.size());
+    LocalDate dateFin;
+    if (dateDebut == null) {
+    	dateFin = null;
+    } else {
+    	dateFin = dateDebut.plusWeeks(lesTaches.size());
+    }
 
     // Instanciation du projet et mise à jour du compteur
     Projet projet = new Projet(nomProjet, dateDebut, dateFin, lesTaches, lesEquipes);

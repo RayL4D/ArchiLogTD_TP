@@ -17,8 +17,10 @@ public enum CodeErreur {
   EQUIPE_INTROUVABLE("L'équipe spécifiée est introuvable dans le projet."), 
   TACHE_INTROUVABLE("La tâche spécifiée est introuvable dans le projet."),
   FICHIER_ILLISIBLE("Le fichier est introuvable ou illisible."),
-  FORMAT_FICHIER_INVALIDE("Le contenu du fichier n'a pas le format attendu.");
-
+  FORMAT_FICHIER_INVALIDE("Le contenu du fichier n'a pas le format attendu."),
+  DATE_MANQUANTE("Une date du projet est manquant ou invalide."),
+  NOM_EQUIPE_VIDE("Le nom d'une équipe est vide."),
+  NOM_TACHE_VIDE("L'intitulé d'une tâche est vide.");
   private final String messageParDefaut;
 
   /**
