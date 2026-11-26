@@ -2,6 +2,7 @@ package vue;
 
 import java.time.LocalDate;
 import java.util.List;
+import controleur.Controleur;
 import facade.GestionProjets;
 import facade.Observateur;
 import javafx.geometry.Insets;
@@ -19,16 +20,16 @@ import validation.ErreurVerification;
 /**
  * Vue 1 : la liste des projets, avec ajout, suppression et vérification.
  *
- * <p>La vue ne connaît que la façade : elle lui envoie les actions et affiche les erreurs qu'elle
- * renvoie. Elle est un Observateur : quand la façade change (par cette vue ou par l'autre), la
+ * <p>Pour agir, la vue appelle seulement le contrôleur. Elle lit la façade uniquement pour
+ * s'afficher : elle est un Observateur, et quand la façade change (par cette vue ou par l'autre), la
  * méthode actualiser relit la liste des projets.
  *
- * <p>Le bouton « Modifier » demande à la vue VueProjet d'afficher le projet choisi.
+ * <p>Le bouton « Modifier » demande au contrôleur d'ouvrir la vue des détails sur le projet choisi.
  */
 public final class VueListeProjets extends Stage implements Observateur {
 
+  private Controleur controleur;
   private GestionProjets gestion;
-  private VueProjet vueProjet;
 
   private ListView<String> listeProjets = new ListView<>();
   private TextField champNom = new TextField();
@@ -38,20 +39,19 @@ public final class VueListeProjets extends Stage implements Observateur {
   private Label message = new Label();
 
   /**
-   * Construit la vue et s'abonne à la façade.
+   * Construit la vue (le contrôleur la fera s'abonner à la façade).
    *
-   * @param gestion la façade
-   * @param vueProjet la vue de détails, à qui on demande d'afficher le projet choisi
+   * @param controleur le contrôleur, qui reçoit toutes les actions de cette vue
+   * @param gestion la façade, lue seulement pour afficher la liste
    */
-  public VueListeProjets(GestionProjets gestion, VueProjet vueProjet) {
+  public VueListeProjets(Controleur controleur, GestionProjets gestion) {
+    this.controleur = controleur;
     this.gestion = gestion;
-    this.vueProjet = vueProjet;
 
     setTitle("Liste des projets");
     setScene(new Scene(creerContenu(), 480, 560));
 
-    gestion.abonner(this);
-    setOnHidden(evenement -> gestion.desabonner(this));
+    setOnHidden(evenement -> controleur.vueListeFermee());
     actualiser();
   }
 
@@ -62,6 +62,7 @@ public final class VueListeProjets extends Stage implements Observateur {
     champEquipe.setId("champEquipe");
     champNombre.setId("champNombre");
     message.setId("message");
+    message.setWrapText(true);
 
     champNom.setPromptText("Nom du projet");
     champEquipe.setPromptText("Nom de l'équipe");
@@ -112,6 +113,16 @@ public final class VueListeProjets extends Stage implements Observateur {
     listeProjets.getItems().setAll(gestion.getNomsProjets());
   }
 
+  /**
+   * Montre le résultat d'une action (appelée par le contrôleur).
+   *
+   * @param erreurs les erreurs renvoyées par la façade (vide = succès)
+   * @param messageSucces le texte à afficher quand il n'y a aucune erreur
+   */
+  public void afficherResultat(List<ErreurVerification> erreurs, String messageSucces) {
+    message.setText(Messages.enTexte(erreurs, messageSucces));
+  }
+
   private void ajouter() {
     LocalDate dateDebut = champDateDebut.getValue();
     if (dateDebut == null) {
@@ -123,9 +134,8 @@ public final class VueListeProjets extends Stage implements Observateur {
       message.setText("Erreur : le nombre de personnes doit être un nombre entier.");
       return;
     }
-    List<ErreurVerification> erreurs =
-        gestion.creerProjet(champNom.getText(), dateDebut, champEquipe.getText(), Integer.parseInt(texteNombre));
-    message.setText(Messages.enTexte(erreurs, "Projet ajouté."));
+    controleur.creerProjet(
+        champNom.getText(), dateDebut, champEquipe.getText(), Integer.parseInt(texteNombre));
   }
 
   private void supprimer() {
@@ -134,7 +144,7 @@ public final class VueListeProjets extends Stage implements Observateur {
       message.setText("Sélectionne d'abord un projet.");
       return;
     }
-    gestion.supprimerProjet(nom);
+    controleur.supprimerProjet(nom);
     message.setText("Projet supprimé : " + nom);
   }
 
@@ -144,8 +154,7 @@ public final class VueListeProjets extends Stage implements Observateur {
       message.setText("Sélectionne d'abord un projet.");
       return;
     }
-    vueProjet.afficherProjet(nom);
-    vueProjet.toFront();
+    controleur.modifierProjet(nom);
     message.setText("Projet affiché dans la vue des détails : " + nom);
   }
 
@@ -155,10 +164,10 @@ public final class VueListeProjets extends Stage implements Observateur {
       message.setText("Sélectionne d'abord un projet.");
       return;
     }
-    message.setText(Messages.enTexte(gestion.verifierProjet(nom), "Le projet " + nom + " est valide."));
+    controleur.verifierProjet(nom);
   }
 
   private void verifierTous() {
-    message.setText(Messages.enTexte(gestion.verifierTousLesProjets(), "Tous les projets sont valides."));
+    controleur.verifierTousLesProjets();
   }
 }
